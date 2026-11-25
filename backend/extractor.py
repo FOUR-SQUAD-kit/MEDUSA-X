@@ -5,7 +5,7 @@ import sys
 from pathlib import Path
 from datetime import datetime
 
-from document_processor import process_document
+from backend.document_processor import process_document
 
 
 # --------------------------------------------------

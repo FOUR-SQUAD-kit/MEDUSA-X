@@ -1,0 +1,258 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#0b1220">
+    <title>MEDUSA-X | Clinical Intelligence</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div class="app-shell">
+
+    <aside class="sidebar">
+        <div class="brand">
+            <div class="brand-mark">M<span>+</span></div>
+            <div>
+                <h1>MEDUSA-X</h1>
+                <p>CLINICAL INTELLIGENCE</p>
+            </div>
+        </div>
+
+        <div class="nav-label">WORKSPACE</div>
+        <nav class="navigation">
+            <button class="nav-item active" data-section="dashboard">
+                <span>◈</span> Overview
+            </button>
+            <button class="nav-item" data-section="patients">
+                <span>♙</span> Patients
+            </button>
+            <button class="nav-item" data-section="documents">
+                <span>▤</span> Document analysis
+            </button>
+            <button class="nav-item" data-section="timeline-section">
+                <span>◷</span> Clinical timeline
+            </button>
+            <button class="nav-item" data-section="ledger-section">
+                <span>▣</span> Truth Ledger
+            </button>
+        </nav>
+
+        <div class="sidebar-bottom">
+            <div class="system-card">
+                <span class="live-dot"></span>
+                <div>
+                    <strong>System operational</strong>
+                    <small>MEDUSA-X API</small>
+                </div>
+            </div>
+            <div class="sidebar-footer">
+                HISTORY-AWARE INTELLIGENCE<br>
+                <span>Evidence before conclusions.</span>
+            </div>
+        </div>
+    </aside>
+
+    <main class="main-content">
+
+        <header class="topbar">
+            <div>
+                <p class="eyebrow">CLINICAL WORKSPACE / OVERVIEW</p>
+                <h2 id="page-title">Intelligence Overview</h2>
+            </div>
+            <div class="topbar-right">
+                <div class="api-status">
+                    <span class="live-dot"></span>
+                    <span id="api-status">Connecting...</span>
+                </div>
+                <div class="avatar">MX</div>
+            </div>
+        </header>
+
+        <section id="dashboard" class="page-section">
+
+            <div class="welcome-banner">
+                <div>
+                    <span class="banner-tag">HISTORY-AWARE CLINICAL INTELLIGENCE</span>
+                    <h2>See the complete story.<br><span>Trust the evidence.</span></h2>
+                    <p>Understand clinical history, identify inconsistencies and preserve the evidence behind every finding.</p>
+                    <button class="primary-button" data-go="documents">
+                        Analyse a document <span>↗</span>
+                    </button>
+                </div>
+                <div class="banner-art">
+                    <div class="orb orb-one"></div>
+                    <div class="orb orb-two"></div>
+                    <div class="orbit-ring"></div>
+                    <div class="core-symbol">M<span>+</span></div>
+                    <div class="art-caption">CLINICAL<br>TRUTH ENGINE</div>
+                </div>
+            </div>
+
+            <div class="section-heading">
+                <div>
+                    <p class="eyebrow">LIVE WORKSPACE</p>
+                    <h3>System overview</h3>
+                </div>
+                <span class="muted-text">Synthetic demonstration data</span>
+            </div>
+
+            <div class="stats-grid">
+                <article class="stat-card">
+                    <div class="stat-top"><span>Registered patients</span><span class="stat-icon cyan">♙</span></div>
+                    <strong id="stat-patients">02</strong>
+                    <small>Available demo patients</small>
+                </article>
+                <article class="stat-card">
+                    <div class="stat-top"><span>Timeline events</span><span class="stat-icon blue">◷</span></div>
+                    <strong id="stat-events">—</strong>
+                    <small>For selected patient</small>
+                </article>
+                <article class="stat-card">
+                    <div class="stat-top"><span>Open findings</span><span class="stat-icon amber">⌁</span></div>
+                    <strong id="stat-findings">—</strong>
+                    <small>Missing or unresolved items</small>
+                </article>
+                <article class="stat-card">
+                    <div class="stat-top"><span>Review required</span><span class="stat-icon violet">✳</span></div>
+                    <strong id="stat-review">—</strong>
+                    <small>Items requiring clinician attention</small>
+                </article>
+            </div>
+
+            <div class="content-grid">
+                <article class="panel patient-panel" id="patients">
+                    <div class="panel-heading">
+                        <div>
+                            <p class="eyebrow">PATIENT DIRECTORY</p>
+                            <h3>Demo patients</h3>
+                        </div>
+                        <span class="count-pill">02 RECORDS</span>
+                    </div>
+                    <div id="patient-list" class="patient-list">
+                        <div class="loading">Loading patient records...</div>
+                    </div>
+                </article>
+
+                <article class="panel upload-panel" id="documents">
+                    <div class="panel-heading">
+                        <div>
+                            <p class="eyebrow">DOCUMENT INTELLIGENCE</p>
+                            <h3>Analyse a clinical record</h3>
+                        </div>
+                        <span class="upload-icon">↑</span>
+                    </div>
+
+                    <div class="upload-zone" id="upload-zone">
+                        <div class="upload-symbol">⇧</div>
+                        <h4>Drop your document here</h4>
+                        <p>or browse files from your computer</p>
+                        <input type="file" id="file-input" accept=".pdf,.png,.jpg,.jpeg,.tiff,.bmp">
+                        <button class="secondary-button" id="browse-button">Choose document</button>
+                        <small>PDF, PNG, JPG, TIFF or BMP</small>
+                    </div>
+
+                    <div id="upload-status" class="upload-status" aria-live="polite"></div>
+                </article>
+            </div>
+
+            <article class="panel selected-patient-panel">
+                <div class="panel-heading">
+                    <div>
+                        <p class="eyebrow">CURRENT PATIENT</p>
+                        <h3 id="selected-patient-name">No patient selected</h3>
+                    </div>
+                    <span id="selected-patient-id" class="count-pill">SELECT A PATIENT</span>
+                </div>
+                <p id="patient-description" class="muted-text">Choose a synthetic patient above to inspect their clinical history.</p>
+                <button id="open-patient-button" class="secondary-button" disabled>Open patient workspace →</button>
+            </article>
+        </section>
+
+        <section id="timeline-section" class="page-section hidden">
+            <div class="section-heading">
+                <div>
+                    <p class="eyebrow">TEMPORAL RECONSTRUCTION</p>
+                    <h3>Clinical timeline</h3>
+                </div>
+                <span id="timeline-patient" class="count-pill">NO PATIENT</span>
+            </div>
+            <article class="panel">
+                <div id="timeline-content" class="timeline-content">
+                    <div class="empty-state">Select a patient to view their clinical timeline.</div>
+                </div>
+            </article>
+        </section>
+
+        <section id="ledger-section" class="page-section hidden">
+            <div class="section-heading">
+                <div>
+                    <p class="eyebrow">EVIDENCE-BACKED RECONCILIATION</p>
+                    <h3>Clinical Truth Ledger</h3>
+                </div>
+                <span class="count-pill">PROVENANCE PRESERVED</span>
+            </div>
+            <div class="ledger-summary" id="ledger-summary"></div>
+            <article class="panel">
+                <div id="ledger-content">
+                    <div class="empty-state">Select a patient to inspect their Truth Ledger.</div>
+                </div>
+            </article>
+        </section>
+
+        <section id="patient-workspace" class="page-section hidden">
+            <div class="section-heading">
+                <div>
+                    <p class="eyebrow">PATIENT RECORD</p>
+                    <h3 id="workspace-patient-name">Patient workspace</h3>
+                </div>
+                <span id="workspace-patient-id" class="count-pill">NO PATIENT</span>
+            </div>
+
+            <div class="stats-grid compact-stats">
+                <article class="stat-card">
+                    <div class="stat-top"><span>Timeline events</span><span class="stat-icon cyan">◷</span></div>
+                    <strong id="patient-events">—</strong>
+                </article>
+                <article class="stat-card">
+                    <div class="stat-top"><span>Conflicts / missing</span><span class="stat-icon amber">⌁</span></div>
+                    <strong id="patient-conflicts">—</strong>
+                </article>
+                <article class="stat-card">
+                    <div class="stat-top"><span>Pending verification</span><span class="stat-icon violet">✳</span></div>
+                    <strong id="patient-pending">—</strong>
+                </article>
+                <article class="stat-card">
+                    <div class="stat-top"><span>Historical entries</span><span class="stat-icon blue">◴</span></div>
+                    <strong id="patient-historical">—</strong>
+                </article>
+            </div>
+
+            <div class="content-grid">
+                <article class="panel">
+                    <div class="panel-heading"><h3>Diagnosis & medication findings</h3></div>
+                    <div id="patient-findings"></div>
+                </article>
+                <article class="panel">
+                    <div class="panel-heading"><h3>Clinician review</h3></div>
+                    <div id="clinician-review"></div>
+                </article>
+            </div>
+        </section>
+
+        <footer class="footer">
+            <span>MEDUSA-X · HISTORY-AWARE CLINICAL INTELLIGENCE</span>
+            <span>Decision support prototype · Clinician review required</span>
+        </footer>
+
+    </main>
+</div>
+
+<script src="script.js"></script>
+</body>
+</html>
