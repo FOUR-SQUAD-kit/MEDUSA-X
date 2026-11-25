@@ -14,11 +14,14 @@ class ClinicalQA:
         top_k: int = 5,
     ) -> dict[str, Any]:
 
-        if not patient_id:
+        if not patient_id or not patient_id.strip():
             raise ValueError("Patient ID is required.")
 
-        if not question.strip():
+        if not question or not question.strip():
             raise ValueError("Question cannot be empty.")
+
+        if top_k < 1:
+            raise ValueError("top_k must be at least 1.")
 
         evidence_items = rag_engine.search_evidence(
             patient_id=patient_id,
@@ -33,7 +36,8 @@ class ClinicalQA:
                 "status": "insufficient",
                 "answer": (
                     "The available clinical records do not contain "
-                    "enough evidence to answer this question."
+                    "enough evidence to answer this question. "
+                    "No clinical conclusion has been generated."
                 ),
                 "evidence": [],
                 "requires_clinician_review": True,
@@ -43,12 +47,14 @@ class ClinicalQA:
 
         for item in evidence_items:
             sources.append({
+                "evidence_id": item["evidence_id"],
                 "document_id": item["document_id"],
                 "document_name": item["document_name"],
                 "page": item["source_page"],
                 "quote": item["evidence"],
                 "event_date": item["event_date"],
                 "recorded_date": item["recorded_date"],
+                "retrieval_distance": item["distance"],
             })
 
         return {
@@ -56,12 +62,13 @@ class ClinicalQA:
             "question": question,
             "status": "evidence_retrieved",
             "answer": (
-                "Relevant clinical evidence was retrieved. "
-                "A grounded answer requires evidence reconciliation "
-                "and language-model processing."
+                "Relevant clinical evidence was retrieved from "
+                "the patient's records. This evidence has not yet "
+                "been reconciled or verified. A clinical conclusion "
+                "cannot be generated at this stage."
             ),
             "evidence": sources,
-            "requires_clinician_review": False,
+            "requires_clinician_review": True,
         }
 
 
