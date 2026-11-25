@@ -1,15 +1,37 @@
-﻿.venv/
-venv/
+﻿# Python
 __pycache__/
 *.py[cod]
+*.so
+*.egg-info/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Virtual environments
+.venv/
+venv/
+env/
+ENV/
+
+# Secrets
 .env
 .env.*
 !.env.example
+
+# MEDUSA-X local data
 chroma_db/
 backend/chroma_db/
 data/
 outputs/
+
+# Logs and temporary files
 *.log
-.DS_Store
+tempCodeRunnerFile.py
+
+# IDE settings
 .vscode/
 .idea/
+
+# OS files
+.DS_Store
+Thumbs.db
