@@ -1,0 +1,89 @@
+{
+ "patient_id": "TEST-001",
+ "conflicts": [
+  {
+   "id": "c1",
+   "type": "diagnosis",
+   "title": "Synthetic conflict: Condition A vs Condition B",
+   "severity": "high",
+   "claims": [
+    {
+     "text": "Condition A recorded",
+     "source": {
+      "doc": "synthetic_admission.pdf",
+      "page": 1
+     }
+    },
+    {
+     "text": "Condition B recorded",
+     "source": {
+      "doc": "synthetic_discharge.pdf",
+      "page": 2
+     }
+    }
+   ]
+  },
+  {
+   "id": "m1",
+   "type": "medication",
+   "drug": "Drug X",
+   "issue": "Synthetic discrepancy: dose differs between two documents",
+   "severity": "medium",
+   "sources": [
+    {
+     "doc": "synthetic_admission.pdf",
+     "page": 1
+    },
+    {
+     "doc": "synthetic_discharge.pdf",
+     "page": 3
+    }
+   ]
+  },
+  {
+   "id": "c2",
+   "type": "diagnosis",
+   "title": "Synthetic conflict: minor wording difference",
+   "severity": "low",
+   "claims": [
+    {
+     "text": "Wording 1",
+     "source": {
+      "doc": "synthetic_progress.pdf",
+      "page": 2
+     }
+    },
+    {
+     "text": "Wording 2",
+     "source": {
+      "doc": "synthetic_discharge.pdf",
+      "page": 2
+     }
+    }
+   ]
+  }
+ ],
+ "missing": [
+  {
+   "item": "Synthetic missing item",
+   "why": "Not found in any document",
+   "critical": false
+  }
+ ],
+ "pending": [
+  {
+   "item": "Synthetic pending result",
+   "why": "Requested, no result in the record"
+  }
+ ],
+ "gate": {
+  "decision": "escalate",
+  "reasons": [
+   {
+    "id": "c1",
+    "text": "Synthetic conflict: Condition A vs Condition B",
+    "severity": "high"
+   }
+  ]
+ }
+}

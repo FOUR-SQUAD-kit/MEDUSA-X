@@ -1,0 +1,2 @@
+{"results": [{"claim": "unsupported test", "status": "insufficient", "confidence": 0.2, "evidence": [],
+  "gate": {"decision": "escalate", "reasons": [{"id": "no_evidence", "text": "Answer has no supporting source", "severity": "high"}]}}]}

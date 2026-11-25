@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>MEDUSA-X · Clinical record review</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Serif:wght@500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header class="top">
+  <h1>MEDUSA-X</h1>
+  <label class="pick">Patient ID <input id="pid" type="text" list="plist" placeholder="Enter patient ID" autocomplete="off"></label><datalist id="plist"></datalist>
+  <button id="open" type="button" class="alt">Open</button>
+  <div id="pinfo" class="pinfo"></div>
+  <span id="conn" class="conn" role="alert" hidden></span>
+</header>
+
+<main>
+  <section id="gate" class="gate" aria-live="polite"></section>
+
+  <section class="card span2">
+    <h2>Patient timeline</h2>
+    <ol id="timeline" class="timeline"></ol>
+  </section>
+
+  <section class="card">
+    <h2>Diagnosis conflicts</h2>
+    <div id="conflicts"></div>
+  </section>
+
+  <section class="card">
+    <h2>Medication discrepancies</h2>
+    <div id="meds"></div>
+  </section>
+
+  <section class="card">
+    <h2>Missing information</h2>
+    <ul id="missing" class="plain"></ul>
+    <h3>Pending verification</h3>
+    <ul id="pending" class="plain"></ul>
+  </section>
+
+  <section class="card">
+    <h2>Documents</h2>
+    <div id="drop" class="drop" tabindex="0" role="button" aria-label="Upload documents">
+      Drop records here or choose files
+      <input id="file" type="file" multiple accept=".pdf,.txt,.docx,.json" hidden>
+    </div>
+    <ul id="docs" class="plain"></ul>
+  </section>
+
+  <section class="card">
+    <h2>Check a claim against the record</h2>
+    <form id="qa" class="qa">
+      <input id="q" type="text" placeholder="Type a statement to verify against the documents" required>
+      <button type="submit">Check</button>
+    </form>
+    <div id="answer" aria-live="polite"></div>
+  </section>
+
+  <section class="card">
+    <h2>Clinician review</h2>
+    <div id="review"></div>
+  </section>
+</main>
+<script src="script.js"></script>
+</body>
+</html>

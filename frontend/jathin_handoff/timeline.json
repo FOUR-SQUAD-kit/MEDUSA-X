@@ -1,0 +1,56 @@
+{
+ "patient_id": "TEST-001",
+ "timeline": [
+  {
+   "date": "2000-01-01",
+   "event": "Synthetic event: admission documented",
+   "status": "supported",
+   "source": {
+    "doc": "synthetic_admission.pdf",
+    "page": 1
+   }
+  },
+  {
+   "date": "2000-01-02",
+   "event": "Synthetic event: result recorded",
+   "status": "supported",
+   "source": {
+    "doc": "synthetic_lab.pdf",
+    "page": 1
+   }
+  },
+  {
+   "date": "2000-01-03",
+   "event": "Synthetic event: conflicting entry",
+   "status": "conflict",
+   "source": {
+    "doc": "synthetic_progress.pdf",
+    "page": 2
+   }
+  },
+  {
+   "date": null,
+   "event": "Synthetic event: change with no date recorded",
+   "status": "missing",
+   "source": {
+    "doc": "synthetic_discharge.pdf",
+    "page": 3
+   }
+  },
+  {
+   "date": "1999-12-01",
+   "event": "Synthetic event: earlier history entry",
+   "status": "historical",
+   "source": {
+    "doc": "synthetic_admission.pdf",
+    "page": 2
+   }
+  },
+  {
+   "date": "2000-01-04",
+   "event": "Synthetic event: awaiting confirmation",
+   "status": "pending",
+   "source": null
+  }
+ ]
+}

@@ -1,0 +1,3 @@
+{"results": [{"claim": "Condition A recorded", "status": "supported", "confidence": 0.9,
+  "evidence": [{"doc": "synthetic_admission.pdf", "page": 1, "quote": "Synthetic quote supporting the claim"}],
+  "gate": {"decision": "proceed", "reasons": []}}]}
