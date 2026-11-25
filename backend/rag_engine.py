@@ -51,9 +51,7 @@ class ClinicalRAG:
         if source_page < 1:
             raise ValueError("Source page must be at least 1.")
 
-        evidence_id = (
-            str(uuid4())
-        )
+        evidence_id = str(uuid4())
 
         embedding = self.model.encode(
             evidence,
@@ -107,13 +105,12 @@ class ClinicalRAG:
 
         evidence_items = []
 
-        for index, document in enumerate(
-            results["documents"][0]
-        ):
+        for index, document in enumerate(results["documents"][0]):
             metadata = results["metadatas"][0][index]
             distance = results["distances"][0][index]
 
             evidence_items.append({
+                "evidence_id": results["ids"][0][index],
                 "evidence": document,
                 "patient_id": metadata["patient_id"],
                 "document_id": metadata["document_id"],
