@@ -1,6 +1,7 @@
 
 from pathlib import Path
 from typing import Any
+from uuid import uuid4
 
 import chromadb
 from sentence_transformers import SentenceTransformer
@@ -51,7 +52,7 @@ class ClinicalRAG:
             raise ValueError("Source page must be at least 1.")
 
         evidence_id = (
-            f"{patient_id}_{document_id}_page{source_page}"
+            str(uuid4())
         )
 
         embedding = self.model.encode(
