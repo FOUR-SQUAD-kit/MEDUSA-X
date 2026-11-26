@@ -41,6 +41,9 @@
             <button class="nav-item" data-section="ledger-section">
                 <span>▣</span> Truth Ledger
             </button>
+            <button class="nav-item" data-section="patient-history">
+                <span>PH</span> Patient History
+            </button>
         </nav>
 
         <div class="sidebar-bottom">
@@ -94,6 +97,22 @@
                 </div>
             </div>
 
+            <article class="panel" id="home-clinical-assistant">
+                <div class="panel-heading">
+                    <div>
+                        <p class="eyebrow">PATIENT-AWARE CLINICAL AI</p>
+                        <h3>Clinical Intelligence Assistant</h3>
+                    </div>
+                    <span class="count-pill">RAG ASSISTANT</span>
+                </div>
+                <p class="muted-text">Select a patient to ask questions grounded in their clinical records.</p>
+                <label for="home-patient-selector">Selected patient</label>
+                <select id="home-patient-selector">
+                    <option value="">Loading patients...</option>
+                </select>
+                <div id="home-qa-container"></div>
+            </article>
+
             <div class="section-heading">
                 <div>
                     <p class="eyebrow">LIVE WORKSPACE</p>
@@ -123,6 +142,8 @@
                     <strong id="stat-review">—</strong>
                     <small>Items requiring clinician attention</small>
                 </article>
+
+                
             </div>
 
             <div class="content-grid">
@@ -132,8 +153,22 @@
                             <p class="eyebrow">PATIENT DIRECTORY</p>
                             <h3>Demo patients</h3>
                         </div>
-                        <span class="count-pill">02 RECORDS</span>
+                        <span class="count-pill" id="patient-count">03 RECORDS</span>
                     </div>
+
+                    <div class="register-patient-form" style="display:flex; gap:10px; margin:16px 0; flex-wrap:wrap;">
+                        <input
+                            type="text"
+                            id="register-patient-name"
+                            placeholder="Enter patient name"
+                            style="flex:1; min-width:150px; padding:12px; border-radius:8px;"
+                        >
+                        <button class="secondary-button" id="register-patient-button" type="button">
+                            + Register Patient
+                        </button>
+                    </div>
+                    <p id="register-patient-status" aria-live="polite"></p>
+
                     <div id="patient-list" class="patient-list">
                         <div class="loading">Loading patient records...</div>
                     </div>
@@ -205,6 +240,42 @@
             </article>
         </section>
 
+        <section id="patient-history" class="page-section hidden">
+            <div class="section-heading">
+                <div>
+                    <p class="eyebrow">LONGITUDINAL PATIENT RECORDS</p>
+                    <h3>Patient History</h3>
+                    <p class="muted-text">Browse registered patients and their clinical document history.</p>
+                </div>
+            </div>
+
+            <article class="panel">
+                <div class="panel-heading">
+                    <div>
+                        <p class="eyebrow">PATIENT DIRECTORY</p>
+                        <h3>Patient records</h3>
+                    </div>
+                    <span class="count-pill" id="history-patient-count">0 PATIENTS</span>
+                </div>
+                <div id="history-patient-list">
+                    <div class="loading">Loading patient records...</div>
+                </div>
+            </article>
+
+            <article class="panel" id="history-detail-panel">
+                <div class="panel-heading">
+                    <div>
+                        <p class="eyebrow">SELECTED PATIENT</p>
+                        <h3 id="history-selected-name">Patient document history</h3>
+                    </div>
+                    <span class="count-pill" id="history-selected-id">SELECT A PATIENT</span>
+                </div>
+                <div id="history-document-list">
+                    <p class="muted-text">Select a patient above to view their documents.</p>
+                </div>
+            </article>
+        </section>
+
         <section id="patient-workspace" class="page-section hidden">
             <div class="section-heading">
                 <div>
@@ -232,6 +303,8 @@
                     <strong id="patient-historical">—</strong>
                 </article>
             </div>
+
+
 
             <div class="content-grid">
                 <article class="panel">

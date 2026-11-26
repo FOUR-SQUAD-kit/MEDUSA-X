@@ -6,3 +6,4 @@ pydantic
 pymupdf
 chromadb
 sentence-transformers
+google-genai

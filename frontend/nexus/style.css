@@ -957,3 +957,44 @@ button:disabled {
         flex-direction: column;
     }
 }
+
+
+/* Patient-specific uploaded report history */
+#report-history-list {
+    width: 100%;
+    overflow-x: auto;
+}
+
+.report-history-table {
+    width: 100%;
+    min-width: 680px;
+    border-collapse: collapse;
+    text-align: left;
+}
+
+.report-history-table th,
+.report-history-table td {
+    padding: 13px 14px;
+    border-bottom: 1px solid var(--border-color, #e5e7eb);
+    font-size: 13px;
+    vertical-align: middle;
+}
+
+.report-history-table th {
+    font-weight: 600;
+    color: var(--muted, #64748b);
+    white-space: nowrap;
+}
+
+.report-history-table td {
+    color: var(--text, #334155);
+}
+
+.report-history-table a {
+    font-weight: 600;
+    text-decoration: none;
+}
+
+.report-history-table a:hover {
+    text-decoration: underline;
+}

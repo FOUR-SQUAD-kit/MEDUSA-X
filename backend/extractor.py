@@ -516,6 +516,18 @@ def extract_information(document):
         if patient_match else None
     )
 
+    # Patient name
+    name_match = re.search(
+        r"\bPatient\s*Name\s*:\s*([^\r\n]+)",
+        cleaned_text,
+        re.IGNORECASE
+    )
+
+    patient_name = (
+        name_match.group(1).strip()
+        if name_match else None
+    )
+
     # Document ID
     document_match = re.search(
         r"\bDocument\s*ID\s*:\s*([A-Za-z0-9_-]+)",
@@ -693,6 +705,7 @@ def extract_information(document):
 
     return {
         "patient_id": patient_id,
+        "patient_name": patient_name,
         "document_id": document_id,
         "document_name": document.get("document_name"),
         "document_type": document.get("document_type"),

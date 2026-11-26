@@ -1,10 +1,36 @@
-
+﻿
 const API = "";
 
 const $ = (id) => document.getElementById(id);
 
 let selectedPatient = null;
 let currentAnalysis = null;
+let historySelectedPatient = null;
+
+const LAST_PATIENT_KEY = "medusax_last_selected_patient";
+
+function rememberSelectedPatient(patient) {
+    selectedPatient = patient;
+
+    if (patient?.patient_id) {
+        localStorage.setItem(LAST_PATIENT_KEY, patient.patient_id);
+    }
+
+    const selector = $("home-patient-selector");
+    if (selector && patient?.patient_id) {
+        selector.value = patient.patient_id;
+    }
+
+    if ($("selected-patient-name")) {
+        $("selected-patient-name").textContent =
+            patient?.patient_name || "Patient";
+        $("selected-patient-id").textContent =
+            patient?.patient_id || "";
+        $("patient-description").textContent =
+            "Selected patient: " + (patient?.patient_name || patient?.patient_id);
+        $("open-patient-button").disabled = !patient?.patient_id;
+    }
+}
 
 const STATUS_LABELS = {
     confirmed_documented: "Confirmed documented",
@@ -101,6 +127,7 @@ function showSection(sectionId) {
         documents: "Document Analysis",
         "timeline-section": "Clinical Timeline",
         "ledger-section": "Clinical Truth Ledger",
+        "patient-history": "Patient History",
         "patient-workspace": "Patient Workspace"
     };
 
@@ -127,6 +154,10 @@ function navigateTo(sectionId) {
     }
 
     showSection(sectionId);
+
+    if (sectionId === "patient-history") {
+        loadPatientHistory();
+    }
 }
 
 async function checkBackend() {
@@ -146,6 +177,56 @@ async function loadPatients() {
     try {
         const response = await request("/api/patients");
         const patients = response.patients || [];
+
+        const selector = $("home-patient-selector");
+        if (selector) {
+            selector.replaceChildren(
+                new Option("Select a patient", "")
+            );
+
+            patients.forEach(patient => {
+                selector.add(new Option(
+                    `${patient.patient_name || "Unnamed patient"} (${patient.patient_id})`,
+                    patient.patient_id
+                ));
+            });
+
+            selector.onchange = () => {
+                const patient = patients.find(
+                    item => item.patient_id === selector.value
+                );
+
+                if (patient) {
+                    rememberSelectedPatient(patient);
+
+                    const result = $("qa-result");
+                    const questionInput =
+                        document.querySelector("#clinical-qa-panel .qa-input");
+
+                    if (result) {
+                        result.replaceChildren();
+                        result.textContent =
+                            "Patient changed. Ask a new question to retrieve this patient's evidence.";
+                    }
+
+                    if (questionInput) {
+                        questionInput.value = "";
+                    }
+                }
+            };
+        }
+
+        const savedPatientId =
+            localStorage.getItem(LAST_PATIENT_KEY) ||
+            selectedPatient?.patient_id;
+
+        const rememberedPatient = patients.find(
+            patient => patient.patient_id === savedPatientId
+        );
+
+        if (rememberedPatient) {
+            rememberSelectedPatient(rememberedPatient);
+        }
 
         $("stat-patients").textContent = patients.length
             .toString()
@@ -173,7 +254,7 @@ async function loadPatients() {
                 makeElement("small", "", patient.patient_id)
             );
 
-            const button = makeElement("button", "patient-open", "Open →");
+            const button = makeElement("button", "patient-open", "Open â†’");
             button.type = "button";
             button.addEventListener("click", () => openPatient(patient));
 
@@ -187,7 +268,7 @@ async function loadPatients() {
 }
 
 async function openPatient(patient) {
-    selectedPatient = patient;
+    rememberSelectedPatient(patient);
 
     $("selected-patient-name").textContent = patient.patient_name || "Patient";
     $("selected-patient-id").textContent = patient.patient_id || "";
@@ -294,7 +375,7 @@ function renderTimeline(events) {
         const meta = makeElement(
             "div",
             "timeline-meta",
-            metaParts.join(" · ") || "Source details not available"
+            metaParts.join(" Â· ") || "Source details not available"
         );
 
         item.append(date, description, meta);
@@ -362,7 +443,7 @@ function renderLedger(entries, counts) {
             const source = makeElement(
                 "p",
                 "timeline-meta",
-                `Source: ${item.document || item.doc || "Document not specified"}${item.page ? " · Page " + item.page : ""}`
+                `Source: ${item.document || item.doc || "Document not specified"}${item.page ? " Â· Page " + item.page : ""}`
             );
             card.append(source);
         });
@@ -390,7 +471,7 @@ function renderFindings(entries) {
         const heading = makeElement(
             "h4",
             "",
-            `${entry.subject_type || "Clinical item"} · ${entry.subject || "Unspecified"}`
+            `${entry.subject_type || "Clinical item"} Â· ${entry.subject || "Unspecified"}`
         );
 
         const statement = makeElement(
@@ -487,7 +568,9 @@ async function uploadDocument(file) {
         currentAnalysis = response.analysis;
         selectedPatient = {
             patient_id: response.patient_id,
-            patient_name: response.analysis.patient?.patient_name || response.patient_id
+            patient_name: response.patient_name ||
+                response.analysis.patient?.patient_name ||
+                response.patient_id
         };
 
         $("selected-patient-name").textContent = selectedPatient.patient_name;
@@ -501,6 +584,9 @@ async function uploadDocument(file) {
 
         status.textContent =
             "Document processed successfully. Clinician review is required.";
+
+        await loadPatientHistory();
+        await loadPatients();
 
         showSection("patient-workspace");
 
@@ -561,7 +647,7 @@ function setupNavigation() {
 
 
 function setupClinicalQA() {
-    const workspace = $("patient-workspace");
+    const workspace = $("home-qa-container");
     if (!workspace) return;
 
     const panel = makeElement("section", "qa-panel");
@@ -619,6 +705,13 @@ function setupClinicalQA() {
     );
 
     const form = makeElement("form", "qa-form");
+
+    const mode = makeElement("select", "qa-input");
+    mode.setAttribute("aria-label", "Question answering mode");
+    mode.append(
+        new Option("RAG - Evidence Retrieval", "rag"),
+        new Option("Agentic AI - Clinical Investigation", "agentic")
+    );
     const input = makeElement("input", "qa-input");
     input.type = "text";
     input.placeholder = "Ask a clinical question...";
@@ -632,7 +725,7 @@ function setupClinicalQA() {
     result.id = "qa-result";
     result.setAttribute("aria-live", "polite");
 
-    form.append(input, button);
+    form.append(mode, input, button);
     panel.append(heading, subtitle, form, result);
     workspace.append(panel);
 
@@ -654,19 +747,29 @@ function setupClinicalQA() {
         );
 
         try {
+            const endpoint = mode.value === "agentic" ? "agent-ask" : "ask";
+
             const response = await request(
-                `/api/patients/${encodeURIComponent(selectedPatient.patient_id)}/ask`,
+                `/api/patients/${encodeURIComponent(selectedPatient.patient_id)}/${endpoint}`,
                 {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ question, top_k: 5 })
+                    body: JSON.stringify(
+                        mode.value === "agentic"
+                            ? { question }
+                            : { question, top_k: 5 }
+                    )
                 }
             );
 
             result.replaceChildren();
 
             result.append(
-                makeElement("h3", "", "Retrieval Result"),
+                makeElement(
+                    "h3",
+                    "",
+                    mode.value === "agentic" ? "Agentic AI Result" : "Retrieval Result"
+                ),
                 makeElement(
                     "div",
                     "qa-answer",
@@ -675,6 +778,23 @@ function setupClinicalQA() {
             );
 
             const evidence = response.evidence || [];
+
+            if (mode.value === "agentic") {
+                const trace = response.tool_trace || [];
+
+                if (trace.length) {
+                    result.append(makeElement("h3", "", "Investigation Steps"));
+                    trace.forEach(item => {
+                        result.append(
+                            makeElement(
+                                "p",
+                                "qa-meta",
+                                `${item.tool}: ${item.status}`
+                            )
+                        );
+                    });
+                }
+            }
 
             if (evidence.length) {
                 result.append(makeElement("h3", "", "Retrieved Clinical Evidence"));
@@ -737,9 +857,255 @@ async function init() {
     await checkBackend();
     await loadPatients();
 
-    $("stat-events").textContent = "—";
-    $("stat-findings").textContent = "—";
-    $("stat-review").textContent = "—";
+    $("stat-events").textContent = "â€”";
+    $("stat-findings").textContent = "â€”";
+    $("stat-review").textContent = "â€”";
 }
 
 document.addEventListener("DOMContentLoaded", init);
+
+// MEDUSA-X PATIENT REGISTRATION CONNECTION
+
+// MEDUSA-X PATIENT REGISTRATION CONNECTION
+(function setupPatientRegistration() {
+    const button = document.getElementById("register-patient-button");
+    const input = document.getElementById("register-patient-name");
+    const status = document.getElementById("register-patient-status");
+
+    if (!button || !input || !status) return;
+
+    async function registerPatient() {
+        const patientName = input.value.trim();
+
+        if (!patientName) {
+            status.textContent = "Please enter a patient name.";
+            return;
+        }
+
+        button.disabled = true;
+        status.textContent = "Registering patient...";
+
+        try {
+            const response = await fetch("/api/patients/register", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ patient_name: patientName })
+            });
+
+            const data = await response.json();
+
+            if (!response.ok) {
+                throw new Error(data.detail || "Registration failed.");
+            }
+
+            input.value = "";
+            status.textContent =
+                data.patient.patient_name + " registered successfully (" +
+                data.patient.patient_id + ").";
+
+            if (typeof loadPatients === "function") {
+                await loadPatients();
+            }
+
+            const listResponse = await fetch("/api/patients");
+            const listData = await listResponse.json();
+            const count = listData.patients.length;
+
+            const countElement = document.getElementById("patient-count");
+            const statElement = document.getElementById("stat-patients");
+
+            if (countElement) {
+                countElement.textContent = count + " RECORDS";
+            }
+
+            if (statElement) {
+                statElement.textContent = String(count).padStart(2, "0");
+            }
+
+        } catch (error) {
+            status.textContent = error.message;
+        } finally {
+            button.disabled = false;
+        }
+    }
+
+    button.addEventListener("click", registerPatient);
+
+    input.addEventListener("keydown", function(event) {
+        if (event.key === "Enter") registerPatient();
+    });
+})();
+
+
+// MEDUSA-X: Uploaded report history
+function formatHistoryTimestamp(value) {
+    if (!value) return "Date unavailable";
+
+    const date = new Date(value);
+    return Number.isNaN(date.getTime())
+        ? "Date unavailable"
+        : date.toLocaleString("en-IN");
+}
+
+function renderHistoryDocuments(patient) {
+    const container = $("history-document-list");
+    if (!container) return;
+
+    $("history-selected-name").textContent =
+        patient.patient_name || "Patient document history";
+    $("history-selected-id").textContent =
+        patient.patient_id || "";
+
+    if (patient.historyError) {
+        addEmpty(container, "Unable to load this patient's documents.");
+        return;
+    }
+
+    const reports = [...(patient.reports || [])].sort(
+        (a, b) => new Date(b.uploaded_at || 0) - new Date(a.uploaded_at || 0)
+    );
+
+    if (!reports.length) {
+        addEmpty(container, "No documents uploaded for this patient yet.");
+        return;
+    }
+
+    const list = makeElement("div", "history-document-items");
+
+    reports.forEach(report => {
+        const item = makeElement("article", "history-document-item");
+
+        const details = makeElement("div", "history-document-details");
+        details.append(
+            makeElement("strong", "", report.filename || "Unnamed document"),
+            makeElement("small", "", "Uploaded: " + formatHistoryTimestamp(report.uploaded_at))
+        );
+
+        const metadata = makeElement("div", "history-document-meta");
+        metadata.append(
+            makeElement("span", "", "Last reviewed: Not recorded"),
+            makeElement("span", "", "Status: " + (report.status || "Unknown"))
+        );
+
+        const link = document.createElement("a");
+        link.className = "history-view-link";
+        link.href = `/api/reports/${encodeURIComponent(report.report_id)}/file`;
+        link.target = "_blank";
+        link.rel = "noopener";
+        link.textContent = "View report";
+
+        item.append(details, metadata, link);
+        list.append(item);
+    });
+
+    container.replaceChildren(list);
+}
+
+async function loadPatientHistory() {
+    const patientContainer = $("history-patient-list");
+    const countLabel = $("history-patient-count");
+
+    if (!patientContainer || !countLabel) return;
+
+    addEmpty(patientContainer, "Loading patient records...");
+    $("history-document-list").textContent = "Loading document history...";
+
+    try {
+        const response = await request("/api/patients");
+        const patients = response.patients || [];
+
+        countLabel.textContent =
+            `${patients.length} ${patients.length === 1 ? "PATIENT" : "PATIENTS"}`;
+
+        if (!patients.length) {
+            historySelectedPatient = null;
+            addEmpty(patientContainer, "No registered patients found.");
+            $("history-selected-name").textContent = "Patient document history";
+            $("history-selected-id").textContent = "SELECT A PATIENT";
+            addEmpty($("history-document-list"), "No patient records are available.");
+            return;
+        }
+
+        const records = await Promise.all(
+            patients.map(async patient => {
+                try {
+                    const result = await request(
+                        `/api/patients/${encodeURIComponent(patient.patient_id)}/reports`
+                    );
+
+                    const reports = result.reports || [];
+                    const latest = reports.reduce((current, report) => {
+                        if (!current) return report;
+                        return new Date(report.uploaded_at || 0) >
+                            new Date(current.uploaded_at || 0)
+                            ? report
+                            : current;
+                    }, null);
+
+                    return { ...patient, reports, latestUpload: latest, historyError: false };
+                } catch (error) {
+                    console.error("Patient history load failed:", patient.patient_id, error);
+                    return { ...patient, reports: [], latestUpload: null, historyError: true };
+                }
+            })
+        );
+
+        const previousId = historySelectedPatient?.patient_id;
+        historySelectedPatient =
+            records.find(patient => patient.patient_id === previousId) || records[0];
+
+        const directory = makeElement("div", "history-patient-items");
+
+        records.forEach(patient => {
+            const card = makeElement("button", "history-patient-card");
+            card.type = "button";
+            card.classList.toggle(
+                "active",
+                patient.patient_id === historySelectedPatient.patient_id
+            );
+
+            const initial = makeElement(
+                "div",
+                "history-patient-initial",
+                (patient.patient_name || "P").charAt(0).toUpperCase()
+            );
+
+            const details = makeElement("div", "history-patient-details");
+            details.append(
+                makeElement("strong", "", patient.patient_name || "Unnamed patient"),
+                makeElement("small", "", patient.patient_id)
+            );
+
+            const summary = makeElement("div", "history-patient-summary");
+            summary.append(
+                makeElement("strong", "", patient.historyError
+                    ? "Unavailable"
+                    : `${patient.reports.length} documents`),
+                makeElement("small", "", patient.latestUpload
+                    ? "Latest: " + formatHistoryTimestamp(patient.latestUpload.uploaded_at)
+                    : "No uploads yet")
+            );
+
+            card.append(initial, details, summary);
+            card.addEventListener("click", () => {
+                historySelectedPatient = patient;
+
+                directory.querySelectorAll(".history-patient-card")
+                    .forEach(button => button.classList.remove("active"));
+                card.classList.add("active");
+
+                renderHistoryDocuments(patient);
+            });
+
+            directory.append(card);
+        });
+
+        patientContainer.replaceChildren(directory);
+        renderHistoryDocuments(historySelectedPatient);
+
+    } catch (error) {
+        console.error("Patient directory load failed:", error);
+        addEmpty(patientContainer, "Unable to load patient records. Please try again.");
+        addEmpty($("history-document-list"), "Document history is unavailable.");
+    }
+}

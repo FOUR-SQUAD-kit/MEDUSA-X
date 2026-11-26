@@ -11,29 +11,19 @@ from backend.truth_ledger import (
 )
 
 
-def run_clinical_pipeline(extraction: dict) -> dict:
+def _finalize_pipeline(adapted: dict) -> dict:
     """
-    Connect document extraction, timeline, reconciliation,
-    and Clinical Truth Ledger.
-
-    Original teammate modules remain unchanged.
+    Shared timeline, reconciliation, and Truth Ledger processing.
+    Supports one or multiple documents for the same patient.
     """
 
-    # Step 1: Adapt extracted data to the shared timeline format.
-    adapted = adapt_extraction(extraction)
-
-    # Step 2: Build the patient's clinical timeline.
     timeline = build_timeline(adapted)
-
-    # Step 3: Detect contradictions and missing information.
     report = reconcile(timeline)
-
-    # Step 4: Generate the initial Truth Ledger.
     ledger = build_truth_ledger(timeline, report)
 
     medication_events = timeline.by_category("medication")
 
-    # Step 5: Keep historical medication records separate.
+    # Keep historical medication records separate.
     historical_groups = {}
 
     for event in medication_events:
@@ -65,13 +55,13 @@ def run_clinical_pipeline(extraction: dict) -> dict:
             )
         )
 
-    # Step 6: Group medication events by medicine.
+    # Group medication events by medicine.
     medication_groups = {}
 
     for event in medication_events:
         medication_groups.setdefault(event.name_key, []).append(event)
 
-    # Step 7: An unresolved withholding must not appear confirmed.
+    # Unresolved withholding must not appear confirmed.
     for key, events in medication_groups.items():
 
         unresolved_withheld = [
@@ -104,7 +94,7 @@ def run_clinical_pipeline(extraction: dict) -> dict:
         )
 
         if main_entry is not None:
-            # Preserve an actual contradiction if one was already identified.
+
             if main_entry["status"] == LedgerStatus.CONFIRMED_DOCUMENTED.value:
                 main_entry["status"] = (
                     LedgerStatus.PENDING_VERIFICATION.value
@@ -124,12 +114,13 @@ def run_clinical_pipeline(extraction: dict) -> dict:
 
             for item in related:
                 conflict_id = item["conflict_id"]
+
                 if conflict_id not in existing_ids:
                     existing_ids.append(conflict_id)
 
             main_entry["related_conflict_ids"] = existing_ids
 
-    # Step 8: Assign fresh ledger IDs and recalculate status counts.
+    # Assign ledger IDs and recalculate status counts.
     for index, entry in enumerate(ledger["entries"], 1):
         entry["ledger_id"] = f"L-{index:03d}"
 
@@ -143,7 +134,6 @@ def run_clinical_pipeline(extraction: dict) -> dict:
 
     ledger["status_counts"] = counts
 
-    # Step 9: Return the complete patient analysis.
     return {
         "patient": timeline.patient,
         "timeline": timeline.to_dict(),
@@ -158,3 +148,60 @@ def run_clinical_pipeline(extraction: dict) -> dict:
             "ledger_status_counts": counts,
         },
     }
+
+
+def run_clinical_pipeline(extraction: dict) -> dict:
+    """
+    Original single-document clinical pipeline.
+    """
+
+    adapted = adapt_extraction(extraction)
+    return _finalize_pipeline(adapted)
+
+
+def run_multi_document_pipeline(extractions: list[dict]) -> dict:
+    """
+    Analyse multiple extracted reports belonging to the same patient.
+
+    Each report is adapted independently so its document name,
+    evidence, and page references remain associated with that report.
+    """
+
+    if not isinstance(extractions, list) or not extractions:
+        raise ValueError("At least one report extraction is required")
+
+    adapted_reports = [
+        adapt_extraction(extraction)
+        for extraction in extractions
+    ]
+
+    first_patient = adapted_reports[0]["patient"]
+    patient_id = first_patient["patient_id"]
+
+    for adapted in adapted_reports[1:]:
+        if adapted["patient"]["patient_id"] != patient_id:
+            raise ValueError(
+                "All reports must belong to the same patient"
+            )
+
+    combined = {
+        "patient": first_patient,
+        "documents": [],
+        "supporting_events": [],
+        "other_events": [],
+        "quality_warnings": [],
+    }
+
+    for adapted in adapted_reports:
+        combined["documents"].extend(adapted["documents"])
+        combined["supporting_events"].extend(
+            adapted["supporting_events"]
+        )
+        combined["other_events"].extend(
+            adapted["other_events"]
+        )
+        combined["quality_warnings"].extend(
+            adapted["quality_warnings"]
+        )
+
+    return _finalize_pipeline(combined)
